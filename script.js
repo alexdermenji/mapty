@@ -15,10 +15,12 @@ class App {
   _map;
   _mapEvent;
   _workouts = [];
+  _zoomLevel = 17;
   constructor() {
     this._getPosition();
     form.addEventListener('submit', this._newWorkout.bind(this));
     inputType.addEventListener('change', this._toggleElevationField);
+    containerWorkouts.addEventListener('click', this._moveToPopup.bind(this));
   }
 
   _getPosition() {
@@ -37,7 +39,7 @@ class App {
     const { longitude } = position.coords;
     const coords = [latitude, longitude];
 
-    this._map = L.map('map').setView(coords, 16);
+    this._map = L.map('map').setView(coords, this._zoomLevel);
 
     L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
       attribution:
@@ -171,6 +173,21 @@ class App {
     inputCadence.closest('.form__row').classList.toggle('form__row--hidden');
     inputElevation.closest('.form__row').classList.toggle('form__row--hidden');
   }
+  _moveToPopup(e) {
+    const clickEl = e.target.closest('.workout');
+    console.log(clickEl);
+    if (!clickEl) return;
+    const workout = this._workouts.find(
+      workout => clickEl.dataset.id === workout.id
+    );
+    console.log(workout);
+    this._map.setView(workout.coords, this._zoomLevel, {
+      animate: true,
+      pan: {
+        duration: 1,
+      },
+    });
+  }
 }
 
 class Workout {
@@ -188,7 +205,7 @@ class Workout {
     const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
     this.description = `${this.type[0].toUpperCase()}${this.type.slice(1)} on ${
       months[this.date.getMonth()]
-    } ${this.date.getDate()}`;
+    }${this.date.getDate()}`;
   }
 }
 
